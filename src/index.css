@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::selection {
+    @apply bg-accent/20;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md border transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-accent text-white border-accent hover:bg-accent-dark hover:border-accent-dark;
+  }
+  .btn-secondary {
+    @apply btn bg-surface text-ink border-border hover:bg-border-light;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-ink border-transparent hover:bg-border-light;
+  }
+  .btn-danger {
+    @apply btn bg-white text-red-600 border-border hover:bg-red-50;
+  }
+  .card {
+    @apply bg-surface border border-border rounded-lg shadow-card;
+  }
+  .card-hover {
+    @apply card transition-shadow duration-200 hover:shadow-card-hover;
+  }
+  .input {
+    @apply w-full px-3 py-2 text-sm bg-white border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent placeholder:text-muted;
+  }
+  .textarea {
+    @apply w-full px-4 py-3 text-sm bg-white border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent placeholder:text-muted resize-none leading-relaxed;
+  }
+  .label {
+    @apply block text-sm font-medium text-ink mb-1.5;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full border border-border bg-border-light text-ink;
+  }
+  .chip-accent {
+    @apply chip border-accent/20 bg-accent/5 text-accent;
+  }
+  .section-title {
+    @apply text-xs font-semibold uppercase tracking-wider text-muted;
+  }
+  .heading-xl {
+    @apply text-3xl font-serif font-semibold tracking-tightest text-ink;
+  }
+  .heading-lg {
+    @apply text-2xl font-serif font-semibold tracking-tightest text-ink;
+  }
+  .heading-md {
+    @apply text-lg font-semibold tracking-tight text-ink;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #E8E6E0 transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #E8E6E0;
+    border-radius: 3px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #D4D1C9;
+  }
+}
+
+@keyframes meter-fill {
+  from { width: 0%; }
+}
+.animate-meter-fill {
+  animation: meter-fill 0.8s ease-out forwards;
+}
