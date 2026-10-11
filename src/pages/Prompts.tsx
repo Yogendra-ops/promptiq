@@ -186,7 +186,8 @@ export default function Prompts() {
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 h-6 w-6 rounded-md hover:bg-border-light text-muted inline-flex items-center justify-center"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 h-6 w-6 rounded-md hover:bg-border-light text-muted inline-flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent/40"
+                aria-label="Clear search"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -304,7 +305,7 @@ export default function Prompts() {
         </div>
       ) : (
         <div className="card overflow-hidden">
-          <div className="grid grid-cols-12 px-5 py-3 border-b border-border bg-border-light/40 text-[11px] font-semibold uppercase tracking-wider text-muted">
+          <div className="hidden md:grid grid-cols-12 px-5 py-3 border-b border-border bg-border-light/40 text-[11px] font-semibold uppercase tracking-wider text-muted">
             <div className="col-span-4">Title</div>
             <div className="col-span-2">Category</div>
             <div className="col-span-1">Score</div>
@@ -316,42 +317,48 @@ export default function Prompts() {
             {filtered.map((p) => (
               <li
                 key={p.id}
-                className="grid grid-cols-12 gap-3 px-5 py-3 text-sm items-center hover:bg-border-light/60 transition-colors"
+                className="flex flex-col gap-2 px-5 py-3 text-sm md:grid md:grid-cols-12 md:gap-3 md:items-center hover:bg-border-light/60 transition-colors"
               >
-                <div className="col-span-4 min-w-0">
+                <div className="md:col-span-4 min-w-0">
                   <button onClick={() => navigate(`/lab?prompt=${p.id}`)} className="font-medium text-ink truncate hover:text-accent text-left block w-full">
                     {p.title}
                   </button>
                   <div className="text-xs text-muted line-clamp-1 mt-0.5">{p.content || '(empty)'}</div>
                 </div>
-                <div className="col-span-2">
-                  <span className="chip !h-5 !text-[11px]">{p.category}</span>
-                </div>
-                <div className="col-span-1">
-                  {typeof p.lastScore === 'number' ? (
-                    <span className={cn('tabular-nums text-sm font-semibold', scoreToColor(p.lastScore))}>
-                      {p.lastScore.toFixed(1)}
-                    </span>
-                  ) : (
-                    <span className="text-muted">—</span>
-                  )}
-                </div>
-                <div className="col-span-2 text-xs text-muted">
-                  {p.tags.length === 0 ? '—' : p.tags.slice(0, 3).map((t) => `#${t}`).join(' ')}
-                </div>
-                <div className="col-span-2 text-xs text-muted whitespace-nowrap">
-                  {formatRelativeTime(p.updatedAt)}
-                </div>
-                <div className="col-span-1 flex justify-end gap-0.5">
-                  <button onClick={() => navigate(`/lab?prompt=${p.id}`)} className="btn-ghost !p-1.5 h-7 w-7" title="Edit in Lab">
-                    <FlaskConical className="h-3.5 w-3.5" />
-                  </button>
-                  <button onClick={() => runInEvaluator(p)} className="btn-ghost !p-1.5 h-7 w-7" title="Run Evaluator">
-                    <Scale className="h-3.5 w-3.5" />
-                  </button>
-                  <button onClick={() => handleDelete(p)} className="btn-ghost !p-1.5 h-7 w-7 text-score-poor hover:bg-score-poor/10" title="Delete">
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                <div className="flex items-center gap-3 md:contents">
+                  <div className="md:col-span-2 flex items-center gap-1.5 md:block">
+                    <span className="md:hidden text-[11px] font-medium text-muted">Category:</span>
+                    <span className="chip !h-5 !text-[11px]">{p.category}</span>
+                  </div>
+                  <div className="md:col-span-1 flex items-center gap-1.5 md:block">
+                    <span className="md:hidden text-[11px] font-medium text-muted">Score:</span>
+                    {typeof p.lastScore === 'number' ? (
+                      <span className={cn('tabular-nums text-sm font-semibold', scoreToColor(p.lastScore))}>
+                        {p.lastScore.toFixed(1)}
+                      </span>
+                    ) : (
+                      <span className="text-muted">—</span>
+                    )}
+                  </div>
+                  <div className="md:col-span-2 text-xs text-muted min-w-0">
+                    <span className="md:hidden text-[11px] font-medium text-muted mr-1.5">Tags:</span>
+                    {p.tags.length === 0 ? '—' : p.tags.slice(0, 3).map((t) => `#${t}`).join(' ')}
+                  </div>
+                  <div className="md:col-span-2 text-xs text-muted whitespace-nowrap">
+                    <span className="md:hidden text-[11px] font-medium text-muted mr-1.5">Updated:</span>
+                    {formatRelativeTime(p.updatedAt)}
+                  </div>
+                  <div className="md:col-span-1 flex justify-end gap-0.5 ml-auto md:ml-0">
+                    <button onClick={() => navigate(`/lab?prompt=${p.id}`)} className="btn-ghost !p-1.5 h-7 w-7" title="Edit in Lab" aria-label="Edit in Lab">
+                      <FlaskConical className="h-3.5 w-3.5" />
+                    </button>
+                    <button onClick={() => runInEvaluator(p)} className="btn-ghost !p-1.5 h-7 w-7" title="Run Evaluator" aria-label="Run Evaluator">
+                      <Scale className="h-3.5 w-3.5" />
+                    </button>
+                    <button onClick={() => handleDelete(p)} className="btn-ghost !p-1.5 h-7 w-7 text-score-poor hover:bg-score-poor/10" title="Delete" aria-label="Delete prompt">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
               </li>
             ))}
@@ -509,13 +516,13 @@ function PromptCard({
               <Copy className="h-3.5 w-3.5" /> Copy
             </button>
             <div className="flex-1" />
-            <button className="btn-ghost !p-1.5 h-7 w-7" onClick={onDuplicate} title="Duplicate">
+            <button className="btn-ghost !p-1.5 h-7 w-7" onClick={onDuplicate} title="Duplicate" aria-label="Duplicate prompt">
               <Copy className="h-3.5 w-3.5" />
             </button>
-            <button className="btn-ghost !p-1.5 h-7 w-7" onClick={onStartEdit} title="Edit details">
+            <button className="btn-ghost !p-1.5 h-7 w-7" onClick={onStartEdit} title="Edit details" aria-label="Edit prompt details">
               <span className="text-[11px] font-semibold text-ink/70">Edit</span>
             </button>
-            <button className="btn-ghost !p-1.5 h-7 w-7 text-score-poor hover:bg-score-poor/10" onClick={onDelete} title="Delete">
+            <button className="btn-ghost !p-1.5 h-7 w-7 text-score-poor hover:bg-score-poor/10" onClick={onDelete} title="Delete" aria-label="Delete prompt">
               <Trash2 className="h-3.5 w-3.5" />
             </button>
           </>

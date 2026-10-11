@@ -204,6 +204,7 @@ export default function Compare() {
                   className="btn-ghost !p-1.5 h-7 w-7 text-muted hover:text-ink"
                   onClick={() => setError(null)}
                   title="Dismiss"
+                  aria-label="Dismiss error"
                 >
                   <XCircle className="h-4 w-4" />
                 </button>
@@ -578,13 +579,13 @@ function PromptPanel({
               {score.toFixed(1)}
             </span>
           )}
-          <button className="btn-ghost !p-1.5 h-7 w-7" title="Copy" onClick={onCopy}>
+          <button className="btn-ghost !p-1.5 h-7 w-7" title="Copy" onClick={onCopy} aria-label="Copy result">
             <Copy className="h-3.5 w-3.5" />
           </button>
-          <button className="btn-ghost !p-1.5 h-7 w-7" title="Save to Library" onClick={onSave}>
+          <button className="btn-ghost !p-1.5 h-7 w-7" title="Save to Library" onClick={onSave} aria-label="Save to library">
             <Save className="h-3.5 w-3.5" />
           </button>
-          <button className="btn-ghost !p-1.5 h-7 w-7" title="Edit in Lab" onClick={onEdit}>
+          <button className="btn-ghost !p-1.5 h-7 w-7" title="Edit in Lab" onClick={onEdit} aria-label="Edit in Lab">
             <FlaskConical className="h-3.5 w-3.5" />
           </button>
         </div>

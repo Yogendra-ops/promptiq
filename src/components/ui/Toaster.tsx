@@ -28,7 +28,7 @@ export default function Toaster() {
               exit={{ opacity: 0, y: -10, scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 360, damping: 28 }}
               className={cn(
-                'pointer-events-auto card shadow-popover p-3.5 pr-10 flex items-start gap-3 border-l-[3px]',
+                'relative pointer-events-auto card shadow-popover p-3.5 pr-10 flex items-start gap-3 border-l-[3px]',
                 t.type === 'success' && 'border-l-score-excellent',
                 t.type === 'error' && 'border-l-score-poor',
                 t.type === 'info' && 'border-l-accent'
@@ -42,7 +42,7 @@ export default function Toaster() {
                 )}
               </div>
               <button
-                className="absolute top-2.5 right-2.5 h-7 w-7 inline-flex items-center justify-center rounded-md text-muted hover:text-ink hover:bg-border-light transition-colors"
+                className="absolute top-2.5 right-2.5 h-7 w-7 inline-flex items-center justify-center rounded-md text-muted hover:text-ink hover:bg-border-light transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40"
                 onClick={() => removeToast(t.id)}
                 aria-label="Dismiss"
               >

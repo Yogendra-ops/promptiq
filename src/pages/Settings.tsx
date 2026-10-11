@@ -327,6 +327,7 @@ export default function Settings() {
                         pushToast({ type: ok ? 'success' : 'error', title: ok ? 'Copied' : 'Copy failed' });
                       }}
                       title="Copy command"
+                      aria-label="Copy command"
                     >
                       <Copy className="h-3.5 w-3.5" />
                     </button>

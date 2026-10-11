@@ -19,7 +19,8 @@ export default function Sidebar() {
         <div
           className="fixed inset-0 z-30 bg-ink/20 backdrop-blur-sm lg:hidden"
           onClick={() => toggleMobile(false)}
-          aria-hidden="true"
+          role="button"
+          aria-label="Close sidebar"
         />
       )}
       <aside
@@ -69,7 +70,7 @@ export default function Sidebar() {
                     )}
                   >
                     <Icon
-                      className={cn('h-4.5 w-4.5 h-[18px] w-[18px]', active ? 'text-accent' : 'text-muted')}
+                      className={cn('h-[18px] w-[18px]', active ? 'text-accent' : 'text-muted')}
                       strokeWidth={active ? 2.25 : 2}
                     />
                     <span className="flex-1">{item.label}</span>

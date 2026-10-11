@@ -46,7 +46,7 @@ export function TopNav() {
             className="hidden md:flex items-center gap-3 px-3.5 py-1.5 h-9 border border-border rounded-md bg-white text-muted text-sm hover:border-accent/40 hover:text-ink transition-colors w-80 max-w-[28vw]"
           >
             <Search className="h-4 w-4" />
-            <span className="flex-1 text-left">Search commands, prompts…</span>
+            <span className="flex-1 text-left whitespace-nowrap truncate">Search commands, prompts…</span>
             <kbd className="text-[10px] font-mono border border-border rounded px-1.5 py-0.5 bg-border-light text-muted">
               ⌘K
             </kbd>
@@ -56,7 +56,7 @@ export function TopNav() {
             className="md:hidden btn-ghost p-2 h-9 w-9"
             aria-label="Search"
           >
-            <Search className="h-4.5 w-4.5 h-[18px] w-[18px]" />
+            <Search className="h-[18px] w-[18px]" />
           </button>
           {(() => {
             if (demoMode) {

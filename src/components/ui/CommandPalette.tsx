@@ -27,10 +27,18 @@ export default function CommandPalette() {
   const openLab = usePromptStore((s) => s.setComparison);
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
-    if (open) setQuery('');
+    if (open) {
+      setQuery('');
+      setSelectedIndex(0);
+    }
   }, [open]);
+
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [query]);
 
   const items = useMemo<CommandItem[]>(() => {
     const nav: CommandItem[] = NAV_ITEMS.map((n) => ({
@@ -149,11 +157,29 @@ export default function CommandPalette() {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (!open) return;
-      if (e.key === 'Escape') close();
+      if (e.key === 'Escape') {
+        close();
+        return;
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex((i) => Math.min(i + 1, filtered.length - 1));
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex((i) => Math.max(i - 1, 0));
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const item = filtered[selectedIndex];
+        if (item) item.run();
+      }
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, close]);
+  }, [open, close, filtered, selectedIndex]);
 
   return (
     <AnimatePresence>
@@ -174,7 +200,7 @@ export default function CommandPalette() {
             className="fixed top-[8vh] left-1/2 -translate-x-1/2 z-[70] w-[min(94vw,720px)] card shadow-popover overflow-hidden"
           >
             <div className="flex items-center gap-3 px-4 h-14 border-b border-border">
-              <Search className="h-4.5 w-4.5 h-[18px] w-[18px] text-muted" />
+              <Search className="h-[18px] w-[18px] text-muted" />
               <input
                 autoFocus
                 value={query}
@@ -197,25 +223,42 @@ export default function CommandPalette() {
                   <div key={group} className="mb-2 last:mb-0">
                     <div className="section-title px-3 py-1.5">{group}</div>
                     <ul className="space-y-0.5">
-                      {list.map((item) => (
-                        <li key={item.id}>
-                          <button
-                            onClick={item.run}
-                            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-border-light transition-colors group"
-                          >
-                            <div className="h-8 w-8 rounded-md border border-border bg-white flex items-center justify-center shrink-0">
-                              <item.icon className="h-4 w-4 text-muted group-hover:text-accent transition-colors" />
-                            </div>
-                            <div className="flex-1 min-w-0 text-left">
-                              <div className="truncate text-ink">{item.label}</div>
-                              {item.hint && (
-                                <div className="text-xs text-muted truncate">{item.hint}</div>
+                      {list.map((item) => {
+                        const flatIndex = filtered.findIndex((f) => f.id === item.id);
+                        const isSelected = flatIndex === selectedIndex;
+                        return (
+                          <li key={item.id}>
+                            <button
+                              onClick={item.run}
+                              onMouseEnter={() => setSelectedIndex(flatIndex)}
+                              className={cn(
+                                'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors group',
+                                isSelected ? 'bg-accent/10 text-accent' : 'hover:bg-border-light'
                               )}
-                            </div>
-                            <ArrowRight className="h-4 w-4 text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </button>
-                        </li>
-                      ))}
+                            >
+                              <div className={cn(
+                                'h-8 w-8 rounded-md border flex items-center justify-center shrink-0',
+                                isSelected ? 'border-accent/30 bg-accent/5' : 'border-border bg-white'
+                              )}>
+                                <item.icon className={cn(
+                                  'h-4 w-4 transition-colors',
+                                  isSelected ? 'text-accent' : 'text-muted group-hover:text-accent'
+                                )} />
+                              </div>
+                              <div className="flex-1 min-w-0 text-left">
+                                <div className={cn('truncate', isSelected ? 'text-accent' : 'text-ink')}>{item.label}</div>
+                                {item.hint && (
+                                  <div className="text-xs text-muted truncate">{item.hint}</div>
+                                )}
+                              </div>
+                              <ArrowRight className={cn(
+                                'h-4 w-4 transition-opacity',
+                                isSelected ? 'text-accent opacity-100' : 'text-muted opacity-0 group-hover:opacity-100'
+                              )} />
+                            </button>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 ))

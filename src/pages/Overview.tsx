@@ -9,41 +9,6 @@ import { DEMO_TEMPLATES } from '@/lib/demoData';
 import { formatRelativeTime, scoreLabel, cn, scoreToColor, copyToClipboard } from '@/lib/utils';
 import type { OllamaModel } from '@/types';
 
-export default function Overview() {
-  const navigate = useNavigate();
-  const evaluations = usePromptStore((s) => s.evaluations).slice(0, 8);
-  const prompts = usePromptStore((s) => s.prompts);
-  const improvements = usePromptStore((s) => s.improvements);
-  const setComparison = usePromptStore((s) => s.setComparison);
-  const upsertPrompt = usePromptStore((s) => s.upsertPrompt);
-  const demoMode = usePromptStore((s) => s.settings.demoMode);
-  const connectionStatus = usePromptStore((s) => s.settings.ollama.connectionStatus);
-  const selectedModel = usePromptStore((s) => s.settings.ollama.selectedModel);
-  const models = usePromptStore((s) => s.models);
-  const testOllamaConnection = usePromptStore((s) => s.testOllamaConnection);
-  const discoverModels = usePromptStore((s) => s.discoverModels);
-  const setSelectedModel = usePromptStore((s) => s.setSelectedModel);
-  const toggleDemo = usePromptStore((s) => s.toggleDemoMode);
-  const pushToast = usePromptStore((s) => s.pushToast);
-  const totalRuns = evaluations.length + improvements.length;
-  const setupIncomplete = !demoMode && (connectionStatus !== 'connected' || models.length === 0 || !selectedModel);
-  const needsSetup = totalRuns === 0 && (setupIncomplete || demoMode);
-
-  const avgScore =
-    evaluations.length > 0
-      ? evaluations.reduce((a, e) => a + e.overallScore, 0) / evaluations.length
-      : 0;
-
-  const quickTemplates = DEMO_TEMPLATES.slice(0, 4);
-  const templateIcons: Record<string, any> = {
-    Mail,
-    FileText,
-    Calendar,
-    BarChart3,
-    Database,
-    BookOpen,
-  };
-
 interface SetupChecklistProps {
   demoMode: boolean;
   connectionStatus: 'unknown' | 'connected' | 'disconnected' | 'checking';
@@ -153,10 +118,10 @@ function SetupChecklist(props: SetupChecklistProps) {
             <button
               className="btn-ghost !p-1.5 h-7 w-7 shrink-0"
               onClick={async () => {
-                const ok = await copyToClipboard('ollama pull llama3.2');
-                if (ok) console.log('ok');
+                await copyToClipboard('ollama pull llama3.2');
               }}
               title="Copy command"
+              aria-label="Copy command"
             >
               <Copy className="h-3.5 w-3.5" />
             </button>
@@ -292,7 +257,7 @@ function SetupChecklist(props: SetupChecklistProps) {
                 <div className="shrink-0">
                   {step.done ? (
                     <div className="h-8 w-8 rounded-full bg-score-excellent/15 text-score-excellent flex items-center justify-center">
-                      <CheckCircle2 className="h-4.5 w-4.5 h-[18px] w-[18px]" />
+                      <CheckCircle2 className="h-[18px] w-[18px]" />
                     </div>
                   ) : step.active ? (
                     <div className="h-8 w-8 rounded-full ring-1 ring-border bg-white text-ink font-semibold text-xs flex items-center justify-center">
@@ -332,6 +297,41 @@ function SetupChecklist(props: SetupChecklistProps) {
     </div>
   );
 }
+
+export default function Overview() {
+  const navigate = useNavigate();
+  const evaluations = usePromptStore((s) => s.evaluations).slice(0, 8);
+  const prompts = usePromptStore((s) => s.prompts);
+  const improvements = usePromptStore((s) => s.improvements);
+  const setComparison = usePromptStore((s) => s.setComparison);
+  const upsertPrompt = usePromptStore((s) => s.upsertPrompt);
+  const demoMode = usePromptStore((s) => s.settings.demoMode);
+  const connectionStatus = usePromptStore((s) => s.settings.ollama.connectionStatus);
+  const selectedModel = usePromptStore((s) => s.settings.ollama.selectedModel);
+  const models = usePromptStore((s) => s.models);
+  const testOllamaConnection = usePromptStore((s) => s.testOllamaConnection);
+  const discoverModels = usePromptStore((s) => s.discoverModels);
+  const setSelectedModel = usePromptStore((s) => s.setSelectedModel);
+  const toggleDemo = usePromptStore((s) => s.toggleDemoMode);
+  const pushToast = usePromptStore((s) => s.pushToast);
+  const totalRuns = evaluations.length + improvements.length;
+  const setupIncomplete = !demoMode && (connectionStatus !== 'connected' || models.length === 0 || !selectedModel);
+  const needsSetup = totalRuns === 0 && (setupIncomplete || demoMode);
+
+  const avgScore =
+    evaluations.length > 0
+      ? evaluations.reduce((a, e) => a + e.overallScore, 0) / evaluations.length
+      : 0;
+
+  const quickTemplates = DEMO_TEMPLATES.slice(0, 4);
+  const templateIcons: Record<string, any> = {
+    Mail,
+    FileText,
+    Calendar,
+    BarChart3,
+    Database,
+    BookOpen,
+  };
 
   async function handleQuickStart(templateId: string) {
     const tpl = DEMO_TEMPLATES.find((t) => t.id === templateId);
@@ -524,7 +524,7 @@ function SetupChecklist(props: SetupChecklistProps) {
                       className="text-left border border-border rounded-lg p-3.5 hover:border-accent/40 hover:shadow-card-hover transition-all bg-white group"
                     >
                       <div className="h-9 w-9 rounded-md bg-border-light text-muted group-hover:text-accent group-hover:bg-accent/10 flex items-center justify-center mb-2 transition-colors">
-                        <Icon className="h-4.5 w-4.5 h-[18px] w-[18px]" />
+                        <Icon className="h-[18px] w-[18px]" />
                       </div>
                       <div className="text-sm font-semibold text-ink leading-tight">{t.name}</div>
                       <div className="text-xs text-muted mt-0.5 line-clamp-2 leading-snug">{t.description}</div>
