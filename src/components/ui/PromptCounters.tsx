@@ -9,7 +9,13 @@ interface Stat {
   hint?: string;
 }
 
-export default function PromptCounters({ content }: { content: string }) {
+export default function PromptCounters({
+  content,
+  className,
+}: {
+  content: string;
+  className?: string;
+}) {
   const counters = useMemo(() => computeCounters(content), [content]);
 
   const stats: Stat[] = [
@@ -21,23 +27,21 @@ export default function PromptCounters({ content }: { content: string }) {
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+    <div className={className ?? 'grid grid-cols-2 min-[440px]:grid-cols-3 xl:grid-cols-5 gap-2.5'}>
       {stats.map((s) => (
         <div
           key={s.label}
-          className="border border-border rounded-lg bg-white px-3 py-2.5 flex items-center gap-2.5"
+          className="border border-border rounded-lg bg-white p-3 flex flex-col justify-between min-w-0 hover:border-border-dark/60 transition-colors"
           title={s.hint}
         >
-          <div className="h-8 w-8 rounded-md bg-border-light text-muted flex items-center justify-center shrink-0">
-            <s.icon className="h-4 w-4" />
-          </div>
-          <div className="min-w-0">
-            <div className="text-[11px] uppercase tracking-wider text-muted font-medium">
+          <div className="flex items-center justify-between gap-1.5 mb-1.5 min-w-0">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted truncate">
               {s.label}
-            </div>
-            <div className="text-lg font-semibold tabular-nums text-ink leading-none mt-0.5">
-              {s.value.toLocaleString()}
-            </div>
+            </span>
+            <s.icon className="h-3.5 w-3.5 text-muted/60 shrink-0" />
+          </div>
+          <div className="text-lg sm:text-xl font-bold font-serif tabular-nums text-ink leading-tight">
+            {s.value.toLocaleString()}
           </div>
         </div>
       ))}

@@ -82,12 +82,15 @@ export default function PromptEditor(props: Props) {
     return saved;
   }
 
+  const editorId = props.autosaveKey || props.existingPromptId || 'editor';
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2 space-y-1">
-          <label className="label">Prompt Title</label>
+          <label htmlFor={`${editorId}-title`} className="label">Prompt Title</label>
           <input
+            id={`${editorId}-title`}
             type="text"
             className="input h-11 font-medium"
             placeholder="e.g. Customer escalation response"
@@ -97,8 +100,9 @@ export default function PromptEditor(props: Props) {
         </div>
         {!props.hideCategory && (
           <div className="space-y-1">
-            <label className="label">Category</label>
+            <label htmlFor={`${editorId}-category`} className="label">Category</label>
             <select
+              id={`${editorId}-category`}
               className="input h-11"
               value={category}
               onChange={(e) => setCategory(e.target.value as PromptCategory)}
@@ -115,10 +119,11 @@ export default function PromptEditor(props: Props) {
 
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <label className="label">Prompt Content</label>
+          <label htmlFor={`${editorId}-content`} className="label">Prompt Content</label>
           <span className="text-[11px] text-muted">Use Markdown formatting for rich structure.</span>
         </div>
         <textarea
+          id={`${editorId}-content`}
           className="textarea min-h-[220px] font-mono text-[13px]"
           placeholder={`Write your prompt here. Use headings, constraints, and a clear output format for best results.
 

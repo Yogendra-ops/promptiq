@@ -1,13 +1,14 @@
 import { create } from 'zustand';
-import type { SavedPrompt, EvaluationResult, ImprovementResult, AppSettings, PromptCategory, OllamaSettings, OllamaModel } from '@/types';
+import type { SavedPrompt, EvaluationResult, ImprovementResult, AIComparisonAnalysis, AppSettings, PromptCategory, OllamaSettings, OllamaModel } from '@/types';
 import { storage, defaultSettings, defaultOllamaSettings } from '@/lib/storage';
-import { DEMO_PROMPTS, makeDemoEvaluation, makeDemoImprovement } from '@/lib/demoData';
+import { makeDemoEvaluation, makeDemoImprovement, makeDemoComparisonAnalysis } from '@/lib/demoData';
 import { uid } from '@/lib/utils';
 import {
   testConnection,
   listModels,
   evaluatePrompt as ollamaEvaluate,
   improvePrompt as ollamaImprove,
+  comparePromptsWithAI as ollamaCompare,
   type OllamaError,
 } from '@/services/ollamaService';
 
@@ -65,6 +66,12 @@ interface PromptState {
     preferDemo?: boolean;
   }) => Promise<ImprovementResult>;
 
+  runCompareAnalysis: (args: {
+    promptA: { title: string; content: string };
+    promptB: { title: string; content: string };
+    preferDemo?: boolean;
+  }) => Promise<AIComparisonAnalysis>;
+
   openCommandPalette: () => void;
   closeCommandPalette: () => void;
   toggleCommandPalette: () => void;
@@ -76,12 +83,15 @@ interface PromptState {
   clearAllData: () => void;
 }
 
-function seedIfEmpty(): SavedPrompt[] {
-  const existing = storage.getPrompts();
-  if (existing.length > 0) return existing;
-  const seeded = DEMO_PROMPTS.map((p) => ({ ...p, id: uid('seed-') }));
-  storage.savePrompts(seeded);
-  return seeded;
+function cleanDemoPrompts(list: SavedPrompt[]): SavedPrompt[] {
+  return list.filter(
+    (p) =>
+      !p.id.startsWith('seed-') &&
+      !p.id.startsWith('demo-prompt-') &&
+      p.title !== 'Weekly Engineering Standup Summary' &&
+      p.title !== 'Customer Escalation Response' &&
+      p.title !== 'Security Audit Checklist'
+  );
 }
 
 export const usePromptStore = create<PromptState>((set, get) => ({
@@ -94,11 +104,25 @@ export const usePromptStore = create<PromptState>((set, get) => ({
   ui: { commandPaletteOpen: false, mobileSidebarOpen: false, toasts: [] },
 
   hydrate: () => {
-    const prompts = seedIfEmpty();
+    const raw = storage.getPrompts();
+    const prompts = cleanDemoPrompts(raw);
+    if (prompts.length !== raw.length) {
+      storage.savePrompts(prompts);
+    }
     const evaluations = storage.getEvaluations();
     const improvements = storage.getImprovements();
     const settings = storage.getSettings();
-    set({ prompts, evaluations, improvements, settings });
+    const activeImpId = storage.getActiveImprovementId();
+    let comparison = { original: null, improved: null, improvement: null } as PromptState['comparison'];
+    const activeImp = activeImpId
+      ? improvements.find((i) => i.id === activeImpId)
+      : improvements[0];
+    if (activeImp) {
+      const origEval = evaluations.find((e) => e.promptContent === activeImp.originalPromptContent) ?? null;
+      const impEval = evaluations.find((e) => e.promptContent === activeImp.improvedPromptContent) ?? null;
+      comparison = { original: origEval, improved: impEval, improvement: activeImp };
+    }
+    set({ prompts, evaluations, improvements, settings, comparison });
   },
 
   upsertPrompt: (p) => {
@@ -198,7 +222,11 @@ export const usePromptStore = create<PromptState>((set, get) => ({
   },
 
   setComparison: (patch) => {
-    set((s) => ({ comparison: { ...s.comparison, ...patch } }));
+    const next = { ...get().comparison, ...patch };
+    if (patch.improvement !== undefined) {
+      storage.saveActiveImprovementId(patch.improvement?.id ?? null);
+    }
+    set({ comparison: next });
   },
 
   updateSettings: (patch) => {
@@ -313,6 +341,28 @@ export const usePromptStore = create<PromptState>((set, get) => ({
     return result;
   },
 
+  runCompareAnalysis: async ({ promptA, promptB, preferDemo }) => {
+    const settings = get().settings;
+    const useDemo = preferDemo ?? settings.demoMode;
+    if (useDemo) {
+      return makeDemoComparisonAnalysis(promptA, promptB);
+    }
+    if (!settings.ollama.selectedModel) {
+      throw {
+        type: 'validation',
+        message: 'No Ollama model selected. Go to Settings → Discover Models to select a model before running AI prompt comparison.',
+        guidance: '1. Open Settings (gear icon in sidebar)\n2. Select an installed model\n3. Or enable Demo Mode in the top bar to run comparisons immediately.',
+      };
+    }
+    return await ollamaCompare({
+      promptA,
+      promptB,
+      model: settings.ollama.selectedModel,
+      temperature: settings.ollama.temperature,
+      opts: { baseUrl: settings.ollama.baseUrl, timeoutMs: settings.ollama.timeoutMs },
+    });
+  },
+
   openCommandPalette: () => set({ ui: { ...get().ui, commandPaletteOpen: true } }),
   closeCommandPalette: () => set({ ui: { ...get().ui, commandPaletteOpen: false } }),
   toggleCommandPalette: () => set({ ui: { ...get().ui, commandPaletteOpen: !get().ui.commandPaletteOpen } }),
@@ -333,9 +383,8 @@ export const usePromptStore = create<PromptState>((set, get) => ({
 
   clearAllData: () => {
     storage.clearAll();
-    const prompts = seedIfEmpty();
     set({
-      prompts,
+      prompts: [],
       evaluations: [],
       improvements: [],
       settings: defaultSettings(),

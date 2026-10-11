@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Scale,
@@ -33,7 +33,7 @@ import {
 import type { OllamaError } from '@/services/ollamaService';
 
 export default function Evaluator() {
-  const location = useLocation() as { state?: { evaluationId?: string } };
+  const location = useLocation() as { state?: { evaluationId?: string; promptId?: string } };
   const navigate = useNavigate();
   const evaluations = usePromptStore((s) => s.evaluations);
   const prompts = usePromptStore((s) => s.prompts);
@@ -51,13 +51,20 @@ export default function Evaluator() {
     : undefined;
   const comparisonOriginal = usePromptStore((s) => s.comparison.original);
 
+  const resultsRef = useRef<HTMLElement>(null);
   const [result, setResult] = useState<EvaluationResult | null>(initialEval ?? comparisonOriginal ?? null);
   const [loading, setLoading] = useState(false);
   const [improving, setImproving] = useState(false);
   const [error, setError] = useState<OllamaError | null>(null);
+
+  const initialPromptFromState = location.state?.promptId
+    ? prompts.find((p) => p.id === location.state!.promptId)
+    : undefined;
+
   const [editorState, setEditorState] = useState<{ title: string; content: string; promptId?: string }>({
-    title: '',
-    content: '',
+    title: initialPromptFromState?.title ?? '',
+    content: initialPromptFromState?.content ?? '',
+    promptId: initialPromptFromState?.id,
   });
 
   useEffect(() => {
@@ -67,8 +74,17 @@ export default function Evaluator() {
         content: result.promptContent,
         promptId: result.promptId,
       });
+    } else if (location.state?.promptId) {
+      const p = prompts.find((x) => x.id === location.state!.promptId);
+      if (p) {
+        setEditorState({
+          title: p.title,
+          content: p.content,
+          promptId: p.id,
+        });
+      }
     }
-  }, [result?.id]);
+  }, [result?.id, location.state?.promptId, prompts]);
 
   const canUseLive = !demoMode && !!selectedModel;
 
@@ -87,6 +103,9 @@ export default function Evaluator() {
         promptId: editorState.promptId,
       });
       setResult(r);
+      if (typeof window !== 'undefined' && window.innerWidth < 1280) {
+        setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      }
       pushToast({
         type: 'success',
         title: 'Evaluation complete',
@@ -110,9 +129,9 @@ export default function Evaluator() {
         promptId: result.promptId,
       });
       addImprovement(imp);
-      setComparison({ original: result, improvement: imp });
+      setComparison({ original: result, improvement: imp, improved: null });
       pushToast({ type: 'success', title: 'Improvement ready', description: imp.improvedTitle });
-      navigate('/compare');
+      navigate('/compare', { state: { improvementId: imp.id } });
     } catch (e: any) {
       pushToast({ type: 'error', title: 'Improvement failed', description: e?.message ?? 'Unknown error' });
     } finally {
@@ -262,7 +281,7 @@ export default function Evaluator() {
           )}
         </section>
 
-        <section className="xl:col-span-3 space-y-4">
+        <section ref={resultsRef} className="xl:col-span-3 space-y-4">
           {!result ? (
             <EmptyEvaluatorState />
           ) : (
@@ -301,14 +320,14 @@ export default function Evaluator() {
                   {dimensionsList.map((dim) => {
                     const d = result.dimensions[dim];
                     return (
-                      <div key={dim} className="py-1">
+                      <div key={dim} className="py-2.5">
                         <ScoreMeter
                           score={d.score}
                           label={DIMENSION_LABELS[dim]}
                           weight={DIMENSION_WEIGHTS[dim]}
                           description={DIMENSION_DESCRIPTIONS[dim]}
                         />
-                        <p className="mt-1 mb-2 text-sm text-ink/80 leading-relaxed pl-0.5">
+                        <p className="mt-1.5 mb-2.5 text-sm text-ink/80 leading-relaxed pl-0.5">
                           {d.feedback}
                         </p>
                       </div>

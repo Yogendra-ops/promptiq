@@ -340,8 +340,8 @@ export default function Lab() {
                     <button
                       className="btn-ghost text-xs"
                       onClick={() => {
-                        setComparison({ improvement: currentImp, original: currentEval });
-                        navigate('/compare');
+                        setComparison({ improvement: currentImp, original: currentEval, improved: null });
+                        navigate('/compare', { state: { improvementId: currentImp.id } });
                       }}
                     >
                       View Compare →
@@ -493,7 +493,7 @@ function HistoryView({
   }
   return (
     <div className="card overflow-hidden">
-      <div className="hidden md:grid grid-cols-12 px-5 py-3 border-b border-border bg-border-light/40 text-[11px] font-semibold uppercase tracking-wider text-muted">
+      <div className="hidden lg:grid grid-cols-12 px-5 py-3 border-b border-border bg-border-light/40 text-[11px] font-semibold uppercase tracking-wider text-muted">
         <div className="col-span-1">Type</div>
         <div className="col-span-3">Title</div>
         <div className="col-span-5">Summary</div>
@@ -504,9 +504,9 @@ function HistoryView({
         {entries.map((e) => (
           <li
             key={e.id}
-            className="flex flex-col gap-2 px-5 py-3 text-sm md:grid md:grid-cols-12 md:gap-3 md:items-center hover:bg-border-light/60 transition-colors"
+            className="flex flex-col gap-2 px-5 py-3 text-sm lg:grid lg:grid-cols-12 lg:gap-3 lg:items-center hover:bg-border-light/60 transition-colors"
           >
-            <div className="md:col-span-1">
+            <div className="lg:col-span-1">
               {e.type === 'eval' ? (
                 <span className="chip !text-[10px] !py-0 !h-5">
                   <Scale className="h-3 w-3" /> Eval
@@ -517,7 +517,7 @@ function HistoryView({
                 </span>
               )}
             </div>
-            <div className="md:col-span-3 font-medium text-ink truncate flex items-center gap-2 min-w-0">
+            <div className="lg:col-span-3 font-medium text-ink truncate flex items-center gap-2 min-w-0">
               {e.title}
               {typeof e.score === 'number' && (
                 <span className={cn('tabular-nums text-xs font-semibold', scoreToColor(e.score))}>
@@ -526,14 +526,14 @@ function HistoryView({
               )}
               {e.demo && <span className="chip !py-0 !px-1.5 !text-[10px] !h-4">Demo</span>}
             </div>
-            <div className="md:col-span-5 text-muted text-xs leading-relaxed line-clamp-2">
+            <div className="lg:col-span-5 text-muted text-xs leading-relaxed line-clamp-2">
               {e.summary || '—'}
             </div>
-            <div className="md:col-span-2 text-xs text-muted whitespace-nowrap">
-              <span className="md:hidden text-[11px] font-medium mr-1.5">When:</span>
+            <div className="lg:col-span-2 text-xs text-muted whitespace-nowrap">
+              <span className="lg:hidden text-[11px] font-medium mr-1.5">When:</span>
               {formatRelativeTime(e.at)}
             </div>
-            <div className="md:col-span-1 flex justify-end gap-1">
+            <div className="lg:col-span-1 flex justify-end gap-1">
               <button
                 onClick={() => onApply({ type: e.type, item: e.item })}
                 className="btn-ghost !p-1.5 h-7 w-7"

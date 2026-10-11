@@ -1,4 +1,5 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Layers as BCIcon, ChevronRight, Home, Menu, Search, AlertTriangle, Cpu, Sparkles } from 'lucide-react';
 import { NAV_ITEMS, BREADCRUMB_LABELS, pageFromPath, BRAND } from './navConfig';
 import { usePromptStore } from '@/store/usePromptStore';
@@ -16,6 +17,7 @@ export function TopNav() {
   const selectedModel = usePromptStore((s) => s.settings.ollama.selectedModel);
   const toggleDemo = usePromptStore((s) => s.toggleDemoMode);
   const pushToast = usePromptStore((s) => s.pushToast);
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
 
   return (
     <header className="sticky top-0 z-20 h-16 bg-bg/80 backdrop-blur border-b border-border">
@@ -31,10 +33,10 @@ export function TopNav() {
         <div className="flex items-center gap-2 text-muted">
           <BCIcon className="h-4 w-4" />
           <nav className="flex items-center gap-1.5 text-sm" aria-label="Breadcrumb">
-            <a href="/" className="text-muted hover:text-ink transition-colors flex items-center gap-1">
+            <Link to="/" className="text-muted hover:text-ink transition-colors flex items-center gap-1">
               <Home className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Workspace</span>
-            </a>
+            </Link>
             <ChevronRight className="h-3.5 w-3.5" />
             <span className="text-ink font-medium">{BREADCRUMB_LABELS[page]}</span>
           </nav>
@@ -48,7 +50,7 @@ export function TopNav() {
             <Search className="h-4 w-4" />
             <span className="flex-1 text-left whitespace-nowrap truncate">Search commands, prompts…</span>
             <kbd className="text-[10px] font-mono border border-border rounded px-1.5 py-0.5 bg-border-light text-muted">
-              ⌘K
+              {isMac ? '⌘K' : 'Ctrl+K'}
             </kbd>
           </button>
           <button
@@ -72,6 +74,7 @@ export function TopNav() {
                     'bg-accent/5 border-accent/20 text-accent hover:bg-accent/10 hover:border-accent/40 cursor-pointer'
                   )}
                   title="Demo Mode — click to turn off and use your local Ollama model."
+                  aria-label="Toggle demo mode"
                 >
                   <Sparkles className="h-3.5 w-3.5" />
                   Demo Mode · click to use live
@@ -84,7 +87,7 @@ export function TopNav() {
             let cls = '';
             let label = '';
             let tooltip = '';
-            let Icon: any = Cpu;
+            let Icon: React.ComponentType<{ className?: string }> = Cpu;
             if (allGood) {
               cls = 'bg-border-light border-border text-ink/80 hover:border-accent/30 hover:bg-white cursor-pointer';
               label = `Live · ${selectedModel.split(':')[0]}`;
@@ -114,6 +117,7 @@ export function TopNav() {
                   cls
                 )}
                 title={tooltip}
+                aria-label={label.replace(/^⚠\s*/, '') || tooltip}
               >
                 <Icon className={cn('h-3.5 w-3.5', connectionStatus === 'checking' && 'animate-spin')} />
                 <span className="truncate max-w-[200px]">{label}</span>

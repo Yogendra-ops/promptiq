@@ -178,8 +178,9 @@ export default function Settings() {
             />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-2 space-y-1.5">
-                <label className="label">Server URL</label>
+                <label htmlFor="server-url" className="label">Server URL</label>
                 <input
+                  id="server-url"
                   className="input h-11 font-mono text-[13px]"
                   placeholder="http://localhost:11434"
                   value={baseUrl}
@@ -197,7 +198,7 @@ export default function Settings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="label !mb-0">
+                  <label htmlFor="timeout-range" className="label !mb-0">
                     <span className="inline-flex items-center gap-1.5">
                       <Gauge className="h-3.5 w-3.5 text-muted" /> Request Timeout
                     </span>
@@ -205,6 +206,7 @@ export default function Settings() {
                   <span className="text-xs font-mono text-muted tabular-nums">{timeoutMs} ms</span>
                 </div>
                 <input
+                  id="timeout-range"
                   type="range"
                   min={5000}
                   max={180_000}
@@ -220,7 +222,7 @@ export default function Settings() {
               </div>
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="label !mb-0">
+                  <label htmlFor="temperature-range" className="label !mb-0">
                     <span className="inline-flex items-center gap-1.5">
                       <Cpu className="h-3.5 w-3.5 text-muted" /> Temperature
                     </span>
@@ -228,6 +230,7 @@ export default function Settings() {
                   <span className="text-xs font-mono text-muted tabular-nums">{temperature.toFixed(2)}</span>
                 </div>
                 <input
+                  id="temperature-range"
                   type="range"
                   min={0}
                   max={1.2}

@@ -57,7 +57,7 @@ export function ScoreMeter({
           </div>
         </div>
       </div>
-      <div className="h-1.5 w-full rounded-full bg-border overflow-hidden">
+      <div className={cn(compact ? 'h-1.5' : 'h-2', 'w-full rounded-full bg-border overflow-hidden')}>
         <div
           className={cn('h-full rounded-full animate-meter-fill', track)}
           style={{ width: `${pct}%` }}

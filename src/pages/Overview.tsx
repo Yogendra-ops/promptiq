@@ -287,7 +287,7 @@ function SetupChecklist(props: SetupChecklistProps) {
         </ol>
       )}
 
-      <div className="mt-6 flex items-start gap-2 p-3 rounded-md border border-accent/20 bg-accent/5 text-xs leading-relaxed">
+      <div className="mt-8 flex items-start gap-2 p-3 rounded-md border border-accent/20 bg-accent/5 text-xs leading-relaxed">
         <AlertTriangle className="h-4 w-4 text-accent shrink-0 mt-0.5" />
         <div className="text-ink/85">
           <span className="font-semibold text-accent">Heads up:</span> Your browser may block HTTP access to <code className="bg-white border border-border rounded px-1">localhost:11434</code> if
@@ -424,18 +424,18 @@ export default function Overview() {
           const Icon = s.icon;
           return (
             <div key={s.label} className="card p-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-muted font-medium">{s.label}</div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="section-title truncate">{s.label}</div>
                   <div className={cn('mt-1.5 text-3xl font-serif font-semibold tabular-nums', s.accent)}>
                     {s.value}
                   </div>
                 </div>
-                <div className={cn('h-10 w-10 rounded-lg flex items-center justify-center ring-1', s.ring)}>
+                <div className={cn('h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ring-1', s.ring)}>
                   <Icon className={cn('h-5 w-5', s.accent)} />
                 </div>
               </div>
-              <div className="mt-3 text-xs text-muted">{s.hint}</div>
+              <div className="mt-3 text-xs text-muted truncate">{s.hint}</div>
             </div>
           );
         })}
@@ -514,13 +514,14 @@ export default function Overview() {
                   View all <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </div>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-2.5">
                 {quickTemplates.map((t) => {
                   const Icon = templateIcons[t.icon] ?? FileText;
                   return (
                     <button
                       key={t.id}
                       onClick={() => handleQuickStart(t.id)}
+                      aria-label={`Start with ${t.name} template`}
                       className="text-left border border-border rounded-lg p-3.5 hover:border-accent/40 hover:shadow-card-hover transition-all bg-white group"
                     >
                       <div className="h-9 w-9 rounded-md bg-border-light text-muted group-hover:text-accent group-hover:bg-accent/10 flex items-center justify-center mb-2 transition-colors">
@@ -576,6 +577,7 @@ export default function Overview() {
                           setComparison({ original: e });
                           navigate('/evaluator', { state: { evaluationId: e.id } });
                         }}
+                        aria-label={`View evaluation for ${e.promptTitle}`}
                         className="w-full flex items-center gap-3 p-2.5 rounded-md hover:bg-border-light transition-colors text-left"
                       >
                         <OverallScoreBadge score={e.overallScore} size="sm" />

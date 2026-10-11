@@ -65,6 +65,21 @@ export interface ImprovementResult {
   isDemo?: boolean;
 }
 
+export interface AIComparisonAnalysis {
+  id: string;
+  createdAt: string;
+  promptATitle: string;
+  promptBTitle: string;
+  winner: 'A' | 'B' | 'tie';
+  verdict: string;
+  keyDifferences: string[];
+  promptAStrengths: string[];
+  promptBStrengths: string[];
+  synthesisRecommendation: string;
+  model: string;
+  isDemo?: boolean;
+}
+
 export type PromptCategory =
   | 'Engineering'
   | 'Product & Strategy'

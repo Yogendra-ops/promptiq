@@ -12,6 +12,7 @@ const KEYS = {
   improvements: 'promptiQ.improvements.v1',
   settings: 'promptiQ.settings.v1',
   labState: 'promptiQ.labState.v1',
+  activeImprovementId: 'promptiQ.activeImprovementId.v1',
 } as const;
 
 function safeRead<T>(key: string, fallback: T): T {
@@ -67,6 +68,17 @@ export const storage = {
   },
   saveLabState(state: { title: string; content: string }) {
     return safeWrite(KEYS.labState, state);
+  },
+
+  getActiveImprovementId(): string | null {
+    return safeRead<string | null>(KEYS.activeImprovementId, null);
+  },
+  saveActiveImprovementId(id: string | null) {
+    if (!id) {
+      localStorage.removeItem(KEYS.activeImprovementId);
+      return true;
+    }
+    return safeWrite(KEYS.activeImprovementId, id);
   },
 
   clearAll() {

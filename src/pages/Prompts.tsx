@@ -16,6 +16,7 @@ import {
   X,
   BookOpen,
   Tag,
+  Pencil,
 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/TopNav';
 import { OverallScoreBadge } from '@/components/ui/ScoreMeter';
@@ -117,17 +118,6 @@ export default function Prompts() {
   function runInEvaluator(p: SavedPrompt) {
     setComparison({ original: null });
     navigate('/evaluator', { state: { promptId: p.id } });
-    setTimeout(() => {
-      const editor = document.querySelector<HTMLInputElement>('textarea');
-      if (editor) {
-        // Signal the Evaluator page via a custom storage event is overkill; instead just pass via navigate state
-      }
-    }, 0);
-    // Use our store to preload prompt content to evaluator
-    usePromptStore.setState((s) => ({
-      ...s,
-      // pass through prompts cache; Evaluator will read by promptId if provided
-    }));
   }
 
   async function copyPromptContent(p: SavedPrompt) {
@@ -180,6 +170,7 @@ export default function Prompts() {
             <input
               className="input h-10 pl-9 pr-9"
               placeholder="Search prompts by title, content, or tag…"
+              aria-label="Search prompts by title, content, or tag"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -200,6 +191,7 @@ export default function Prompts() {
               </span>
               <select
                 className="h-10 px-3 bg-white text-sm outline-none"
+                aria-label="Filter by category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value as any)}
               >
@@ -216,6 +208,7 @@ export default function Prompts() {
               </span>
               <select
                 className="h-10 px-3 bg-white text-sm outline-none"
+                aria-label="Sort prompts by"
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortKey)}
               >
@@ -305,7 +298,7 @@ export default function Prompts() {
         </div>
       ) : (
         <div className="card overflow-hidden">
-          <div className="hidden md:grid grid-cols-12 px-5 py-3 border-b border-border bg-border-light/40 text-[11px] font-semibold uppercase tracking-wider text-muted">
+          <div className="hidden lg:grid grid-cols-12 px-5 py-3 border-b border-border bg-border-light/40 text-[11px] font-semibold uppercase tracking-wider text-muted">
             <div className="col-span-4">Title</div>
             <div className="col-span-2">Category</div>
             <div className="col-span-1">Score</div>
@@ -317,21 +310,21 @@ export default function Prompts() {
             {filtered.map((p) => (
               <li
                 key={p.id}
-                className="flex flex-col gap-2 px-5 py-3 text-sm md:grid md:grid-cols-12 md:gap-3 md:items-center hover:bg-border-light/60 transition-colors"
+                className="flex flex-col gap-2 px-5 py-3 text-sm lg:grid lg:grid-cols-12 lg:gap-3 lg:items-center hover:bg-border-light/60 transition-colors"
               >
-                <div className="md:col-span-4 min-w-0">
+                <div className="lg:col-span-4 min-w-0">
                   <button onClick={() => navigate(`/lab?prompt=${p.id}`)} className="font-medium text-ink truncate hover:text-accent text-left block w-full">
                     {p.title}
                   </button>
                   <div className="text-xs text-muted line-clamp-1 mt-0.5">{p.content || '(empty)'}</div>
                 </div>
-                <div className="flex items-center gap-3 md:contents">
-                  <div className="md:col-span-2 flex items-center gap-1.5 md:block">
-                    <span className="md:hidden text-[11px] font-medium text-muted">Category:</span>
+                <div className="flex items-center gap-3 lg:contents">
+                  <div className="lg:col-span-2 flex items-center gap-1.5 lg:block">
+                    <span className="lg:hidden text-[11px] font-medium text-muted">Category:</span>
                     <span className="chip !h-5 !text-[11px]">{p.category}</span>
                   </div>
-                  <div className="md:col-span-1 flex items-center gap-1.5 md:block">
-                    <span className="md:hidden text-[11px] font-medium text-muted">Score:</span>
+                  <div className="lg:col-span-1 flex items-center gap-1.5 lg:block">
+                    <span className="lg:hidden text-[11px] font-medium text-muted">Score:</span>
                     {typeof p.lastScore === 'number' ? (
                       <span className={cn('tabular-nums text-sm font-semibold', scoreToColor(p.lastScore))}>
                         {p.lastScore.toFixed(1)}
@@ -340,15 +333,15 @@ export default function Prompts() {
                       <span className="text-muted">—</span>
                     )}
                   </div>
-                  <div className="md:col-span-2 text-xs text-muted min-w-0">
-                    <span className="md:hidden text-[11px] font-medium text-muted mr-1.5">Tags:</span>
+                  <div className="lg:col-span-2 text-xs text-muted min-w-0">
+                    <span className="lg:hidden text-[11px] font-medium text-muted mr-1.5">Tags:</span>
                     {p.tags.length === 0 ? '—' : p.tags.slice(0, 3).map((t) => `#${t}`).join(' ')}
                   </div>
-                  <div className="md:col-span-2 text-xs text-muted whitespace-nowrap">
-                    <span className="md:hidden text-[11px] font-medium text-muted mr-1.5">Updated:</span>
+                  <div className="lg:col-span-2 text-xs text-muted whitespace-nowrap">
+                    <span className="lg:hidden text-[11px] font-medium text-muted mr-1.5">Updated:</span>
                     {formatRelativeTime(p.updatedAt)}
                   </div>
-                  <div className="md:col-span-1 flex justify-end gap-0.5 ml-auto md:ml-0">
+                  <div className="lg:col-span-1 flex justify-end gap-0.5 ml-auto lg:ml-0">
                     <button onClick={() => navigate(`/lab?prompt=${p.id}`)} className="btn-ghost !p-1.5 h-7 w-7" title="Edit in Lab" aria-label="Edit in Lab">
                       <FlaskConical className="h-3.5 w-3.5" />
                     </button>
@@ -403,7 +396,7 @@ function PromptCard({
   }, [prompt.id]);
 
   return (
-    <article className="card-hover p-5 flex flex-col min-h-[260px]">
+    <article className="card-hover p-5 flex flex-col min-h-[220px] md:min-h-[260px]">
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="flex-1 min-w-0">
           {editing ? (
@@ -482,9 +475,9 @@ function PromptCard({
         </div>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center gap-1.5">
+      <div className="mt-4 pt-4 border-t border-border flex items-center justify-between gap-1">
         {editing ? (
-          <>
+          <div className="flex items-center gap-1.5">
             <button
               className="btn-primary !py-1.5 !px-3 text-xs"
               onClick={() =>
@@ -503,28 +496,31 @@ function PromptCard({
             <button className="btn-secondary !py-1.5 !px-3 text-xs" onClick={onCancelEdit}>
               Cancel
             </button>
-          </>
+          </div>
         ) : (
           <>
-            <button className="btn-ghost !py-1.5 !px-2.5 text-xs" onClick={onOpen}>
-              <FlaskConical className="h-3.5 w-3.5" /> Edit
-            </button>
-            <button className="btn-ghost !py-1.5 !px-2.5 text-xs" onClick={onEvaluate}>
-              <Scale className="h-3.5 w-3.5" /> Evaluate
-            </button>
-            <button className="btn-ghost !py-1.5 !px-2.5 text-xs" onClick={onCopy}>
-              <Copy className="h-3.5 w-3.5" /> Copy
-            </button>
-            <div className="flex-1" />
-            <button className="btn-ghost !p-1.5 h-7 w-7" onClick={onDuplicate} title="Duplicate" aria-label="Duplicate prompt">
-              <Copy className="h-3.5 w-3.5" />
-            </button>
-            <button className="btn-ghost !p-1.5 h-7 w-7" onClick={onStartEdit} title="Edit details" aria-label="Edit prompt details">
-              <span className="text-[11px] font-semibold text-ink/70">Edit</span>
-            </button>
-            <button className="btn-ghost !p-1.5 h-7 w-7 text-score-poor hover:bg-score-poor/10" onClick={onDelete} title="Delete" aria-label="Delete prompt">
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+            <div className="flex items-center gap-1 min-w-0">
+              <button className="btn-ghost !py-1.5 !px-2 text-xs" onClick={onOpen} title="Open in Prompt Lab">
+                <FlaskConical className="h-3.5 w-3.5" /> Edit
+              </button>
+              <button className="btn-ghost !py-1.5 !px-2 text-xs" onClick={onEvaluate} title="Evaluate prompt">
+                <Scale className="h-3.5 w-3.5" /> Evaluate
+              </button>
+              <button className="btn-ghost !py-1.5 !px-2 text-xs" onClick={onCopy} title="Copy prompt content">
+                <Copy className="h-3.5 w-3.5" /> Copy
+              </button>
+            </div>
+            <div className="flex items-center gap-0.5 shrink-0">
+              <button className="btn-ghost !p-1.5 h-7 w-7" onClick={onDuplicate} title="Duplicate" aria-label="Duplicate prompt">
+                <Copy className="h-3.5 w-3.5" />
+              </button>
+              <button className="btn-ghost !p-1.5 h-7 w-7" onClick={onStartEdit} title="Edit details" aria-label="Edit prompt details">
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+              <button className="btn-ghost !p-1.5 h-7 w-7 text-score-poor hover:bg-score-poor/10" onClick={onDelete} title="Delete" aria-label="Delete prompt">
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </>
         )}
       </div>

@@ -8,6 +8,7 @@ export default function Sidebar() {
   const location = useLocation();
   const demoMode = usePromptStore((s) => s.settings.demoMode);
   const connStatus = usePromptStore((s) => s.settings.ollama.connectionStatus);
+  const baseUrl = usePromptStore((s) => s.settings.ollama.baseUrl);
   const mobileOpen = usePromptStore((s) => s.ui.mobileSidebarOpen);
   const toggleMobile = usePromptStore((s) => s.toggleMobileSidebar);
 
@@ -19,11 +20,11 @@ export default function Sidebar() {
         <div
           className="fixed inset-0 z-30 bg-ink/20 backdrop-blur-sm lg:hidden"
           onClick={() => toggleMobile(false)}
-          role="button"
           aria-label="Close sidebar"
         />
       )}
       <aside
+        aria-label="Main navigation"
         className={cn(
           'fixed inset-y-0 left-0 z-40 w-72 border-r border-border bg-white transition-transform duration-200 lg:translate-x-0 lg:static lg:z-0 flex flex-col',
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
@@ -40,7 +41,7 @@ export default function Sidebar() {
             </div>
           </div>
           <button
-            className="lg:hidden btn-ghost px-2 py-1 h-8 w-8"
+            className="lg:hidden p-1.5 rounded-md text-muted hover:text-ink hover:bg-border-light transition-colors"
             onClick={() => toggleMobile(false)}
             aria-label="Close sidebar"
           >
@@ -129,7 +130,7 @@ export default function Sidebar() {
                     : 'Ollama Unavailable'}
                 </div>
                 <div className="text-[11px] text-muted leading-snug truncate">
-                  {usePromptStore.getState().settings.ollama.baseUrl}
+                  {baseUrl}
                 </div>
               </div>
             </div>

@@ -5,44 +5,11 @@ import {
   type DimensionScore,
   type PromptTemplate,
   type SavedPrompt,
+  type AIComparisonAnalysis,
 } from '@/types';
 import { uid, calculateWeightedScore } from '@/lib/utils';
 
-export const DEMO_PROMPTS: SavedPrompt[] = [
-  {
-    id: 'demo-prompt-1',
-    title: 'Weekly Engineering Standup Summary',
-    content:
-      'Summarize the following engineering team updates into a concise weekly standup summary. Focus on blockers, completed work, and upcoming priorities.',
-    category: 'Engineering',
-    createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000 * 1).toISOString(),
-    tags: ['standup', 'summary', 'team'],
-    lastScore: 7.2,
-    notes: 'Works well with bullet-point input format.',
-  },
-  {
-    id: 'demo-prompt-2',
-    title: 'Customer Escalation Response',
-    content: 'Draft a professional reply to an upset customer email.',
-    category: 'Customer Success',
-    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-    tags: ['email', 'support', 'escalation'],
-    lastScore: 5.4,
-  },
-  {
-    id: 'demo-prompt-3',
-    title: 'Security Audit Checklist',
-    content:
-      'As a senior security auditor, review the attached architecture for OWASP Top 10 vulnerabilities. Provide a severity-rated checklist with concrete remediation steps and owners.',
-    category: 'Security & Compliance',
-    createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000 * 4).toISOString(),
-    tags: ['audit', 'OWASP', 'security'],
-    lastScore: 8.4,
-  },
-];
+export const DEMO_PROMPTS: SavedPrompt[] = [];
 
 export const DEMO_TEMPLATES: PromptTemplate[] = [
   {
@@ -211,6 +178,86 @@ export function makeDemoImprovement(promptTitle: string, promptContent: string):
     ],
     rationale:
       'The original prompt expressed a valid intent but relied on implicit model defaults. Adding explicit boundaries, a concrete output skeleton, and a missing-information policy reduces ambiguity and produces more consistent, auditable outputs.',
+    isDemo: true,
+  };
+}
+
+export function makeDemoComparisonAnalysis(
+  promptA: { title: string; content: string },
+  promptB: { title: string; content: string }
+): AIComparisonAnalysis {
+  const lenA = promptA.content.trim().length;
+  const lenB = promptB.content.trim().length;
+  const hasStructureA = /#|\*\*|- |\d\./.test(promptA.content);
+  const hasStructureB = /#|\*\*|- |\d\./.test(promptB.content);
+  const hasConstraintsA = /constraint|must|should not|do not|never|format|schema/i.test(promptA.content);
+  const hasConstraintsB = /constraint|must|should not|do not|never|format|schema/i.test(promptB.content);
+
+  // Score heuristic
+  const scoreA = (lenA > 40 ? 2 : 0) + (hasStructureA ? 3 : 0) + (hasConstraintsA ? 3 : 0);
+  const scoreB = (lenB > 40 ? 2 : 0) + (hasStructureB ? 3 : 0) + (hasConstraintsB ? 3 : 0);
+
+  let winner: 'A' | 'B' | 'tie' = 'tie';
+  if (scoreB > scoreA) winner = 'B';
+  else if (scoreA > scoreB) winner = 'A';
+  else if (lenB > lenA * 1.3) winner = 'B';
+  else if (lenA > lenB * 1.3) winner = 'A';
+
+  const titleA = promptA.title || 'Prompt A';
+  const titleB = promptB.title || 'Prompt B';
+
+  const verdict =
+    winner === 'B'
+      ? `${titleB} provides clearer operational boundaries and greater execution predictability for language models. It reduces ambiguous interpretation compared to ${titleA}.`
+      : winner === 'A'
+      ? `${titleA} demonstrates superior clarity and focus. Its instructions are direct and avoid unnecessary verbosity present in ${titleB}.`
+      : `Both prompts exhibit comparable execution quality. ${titleA} offers concise framing while ${titleB} emphasizes situational detail.`;
+
+  const keyDifferences = [
+    lenB > lenA
+      ? `${titleB} provides more granular instructions (${Math.round((lenB / Math.max(1, lenA)) * 100)}% the length of ${titleA}).`
+      : `${titleA} is more concise and direct than ${titleB}.`,
+    hasConstraintsB && !hasConstraintsA
+      ? `${titleB} introduces explicit negative constraints or formatting rules absent in ${titleA}.`
+      : hasConstraintsA && !hasConstraintsB
+      ? `${titleA} contains explicit constraints and rules that ${titleB} omits.`
+      : 'Both prompts share similar constraint density.',
+    hasStructureB && !hasStructureA
+      ? `${titleB} utilizes structured markdown hierarchy (headers/lists) for better model parsing.`
+      : hasStructureA && !hasStructureB
+      ? `${titleA} features structured markdown sections that aid sequential reasoning.`
+      : 'Both prompts format their requirements with structural markers.',
+  ];
+
+  const promptAStrengths = [
+    lenA < lenB ? 'Concise phrasing with minimal token overhead' : 'Detailed context and domain specifications',
+    hasStructureA ? 'Clear section delimiters' : 'Direct, unencumbered directive intent',
+  ];
+
+  const promptBStrengths = [
+    lenB > lenA ? 'Granular task decomposition and lower ambiguity' : 'Focused, tight instructions',
+    hasConstraintsB ? 'Explicit guardrails and output format expectations' : 'Clear core deliverable definition',
+  ];
+
+  const synthesisRecommendation =
+    winner === 'B'
+      ? `Adopt ${titleB} as your production baseline. If token consumption is a priority, streamline secondary adjectives while preserving the constraints.`
+      : winner === 'A'
+      ? `Adopt ${titleA} as your primary template. Consider borrowing specific output schemas or examples from ${titleB} to guarantee output shape.`
+      : `Combine the concise core persona from ${titleA} with the output formatting constraints from ${titleB} for optimal LLM adherence.`;
+
+  return {
+    id: uid('cmp-demo-'),
+    createdAt: new Date().toISOString(),
+    promptATitle: titleA,
+    promptBTitle: titleB,
+    winner,
+    verdict,
+    keyDifferences,
+    promptAStrengths,
+    promptBStrengths,
+    synthesisRecommendation,
+    model: 'demo-mock-7b',
     isDemo: true,
   };
 }

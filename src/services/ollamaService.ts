@@ -1,4 +1,4 @@
-import type { OllamaModel, EvaluationDimension, DimensionScore, EvaluationResult, ImprovementResult } from '@/types';
+import type { OllamaModel, EvaluationDimension, DimensionScore, EvaluationResult, ImprovementResult, AIComparisonAnalysis } from '@/types';
 import { uid, validateEvaluationDimensions, calculateWeightedScore } from '@/lib/utils';
 
 export interface OllamaRequestOptions {
@@ -318,6 +318,98 @@ export async function improvePrompt(input: {
       ? parsed.changes.filter((c: any) => typeof c === 'string').slice(0, 10)
       : [],
     rationale: typeof parsed.rationale === 'string' ? parsed.rationale.trim() : 'No rationale provided.',
+    isDemo: false,
+  };
+}
+
+const COMPARE_SYSTEM_PROMPT = `You are PromptIQ, an expert prompt engineering auditor. Compare the two provided prompts (Prompt A and Prompt B) for LLM execution quality, clarity, robustness, and performance. Return ONLY valid JSON:
+{
+  "winner": "A" or "B" or "tie",
+  "verdict": "2-3 sentences summarizing which prompt is more effective for an LLM and the primary reason why.",
+  "keyDifferences": ["3-5 concrete bullet points describing the structural, stylistic, and instructional differences."],
+  "promptAStrengths": ["2-3 specific advantages or highlights of Prompt A."],
+  "promptBStrengths": ["2-3 specific advantages or highlights of Prompt B."],
+  "synthesisRecommendation": "1-2 sentences on how the user could combine the best elements of both prompts into a single optimal prompt."
+}
+
+Rules:
+- Be objective, technical, and analytical.
+- Focus on prompt engineering principles (role framing, clarity, context, constraints, output structure).
+- Return JSON only.`;
+
+export async function comparePromptsWithAI(input: {
+  promptA: { title: string; content: string };
+  promptB: { title: string; content: string };
+  model: string;
+  temperature?: number;
+  opts: OllamaRequestOptions;
+}): Promise<AIComparisonAnalysis> {
+  const { promptA, promptB, model, temperature = 0.3, opts } = input;
+  const url = `${opts.baseUrl.replace(/\/$/, '')}/api/chat`;
+  const body = {
+    model,
+    stream: false,
+    format: 'json',
+    options: { temperature, seed: 17 },
+    messages: [
+      { role: 'system', content: COMPARE_SYSTEM_PROMPT },
+      {
+        role: 'user',
+        content: `Compare these two prompts:\n\n=== PROMPT A (${promptA.title || 'Prompt A'}) ===\n${promptA.content}\n\n=== PROMPT B (${promptB.title || 'Prompt B'}) ===\n${promptB.content}\n\nReturn JSON only.`,
+      },
+    ],
+  };
+
+  const res = await safeFetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    timeoutMs: opts.timeoutMs,
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw makeOllamaError(
+      'bad-response',
+      `AI comparison failed: HTTP ${res.status}${text ? ` — ${text.slice(0, 200)}` : '.'}`,
+      buildGuidanceForFailure(opts.baseUrl)
+    );
+  }
+
+  const json: any = await res.json().catch(() => null);
+  if (!json || typeof json.message?.content !== 'string') {
+    throw makeOllamaError('bad-response', 'Ollama response missing message.content.', buildGuidanceForFailure(opts.baseUrl));
+  }
+
+  const parsed = parseEvaluationJson(json.message.content);
+  if (!parsed || typeof parsed.verdict !== 'string') {
+    throw makeOllamaError(
+      'validation',
+      'The model returned a response that could not be parsed into the required comparison format.',
+      buildGuidanceForFailure(opts.baseUrl)
+    );
+  }
+
+  return {
+    id: uid('cmp-'),
+    createdAt: new Date().toISOString(),
+    promptATitle: promptA.title || 'Prompt A',
+    promptBTitle: promptB.title || 'Prompt B',
+    winner: parsed.winner === 'A' || parsed.winner === 'B' ? parsed.winner : 'tie',
+    verdict: parsed.verdict.trim(),
+    keyDifferences: Array.isArray(parsed.keyDifferences)
+      ? parsed.keyDifferences.filter((x: any) => typeof x === 'string').slice(0, 6)
+      : [],
+    promptAStrengths: Array.isArray(parsed.promptAStrengths)
+      ? parsed.promptAStrengths.filter((x: any) => typeof x === 'string').slice(0, 4)
+      : [],
+    promptBStrengths: Array.isArray(parsed.promptBStrengths)
+      ? parsed.promptBStrengths.filter((x: any) => typeof x === 'string').slice(0, 4)
+      : [],
+    synthesisRecommendation: typeof parsed.synthesisRecommendation === 'string'
+      ? parsed.synthesisRecommendation.trim()
+      : 'Combine the concise framing of Prompt A with the structured constraints of Prompt B.',
+    model,
     isDemo: false,
   };
 }

@@ -3,7 +3,7 @@ import Sidebar from './Sidebar';
 import { TopNav } from './TopNav';
 import { usePromptStore } from '@/store/usePromptStore';
 import { useLocation } from 'react-router-dom';
-import { pageFromPath } from './navConfig';
+import { pageFromPath, BRAND } from './navConfig';
 
 export default function AppLayout({ children }: PropsWithChildren) {
   const hydrate = usePromptStore((s) => s.hydrate);
@@ -48,16 +48,16 @@ export default function AppLayout({ children }: PropsWithChildren) {
   return (
     <div className="min-h-screen flex bg-bg text-ink">
       <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col overflow-x-clip">
         <TopNav />
         <main className="flex-1 px-4 lg:px-8 py-6 lg:py-8 max-w-[1600px] w-full mx-auto">
           {children}
         </main>
         <footer className="px-4 lg:px-8 py-5 border-t border-border text-xs text-muted flex flex-wrap items-center justify-between gap-3 max-w-[1600px] w-full mx-auto">
           <div>
-            <span className="font-semibold text-ink/80">PromptIQ Enterprise</span>
+            <span className="font-semibold text-ink/80">{BRAND.name} {BRAND.version}</span>
             <span className="mx-2">·</span>
-            Make every prompt count
+            {BRAND.tagline}
           </div>
           <div>All data stored locally in your browser.</div>
         </footer>

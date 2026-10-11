@@ -197,7 +197,7 @@ export default function CommandPalette() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.98 }}
             transition={{ type: 'spring', stiffness: 340, damping: 28 }}
-            className="fixed top-[8vh] left-1/2 -translate-x-1/2 z-[70] w-[min(94vw,720px)] card shadow-popover overflow-hidden"
+            className="fixed top-[5vh] sm:top-[8vh] left-1/2 -translate-x-1/2 z-[70] w-[min(94vw,720px)] card shadow-popover overflow-hidden"
           >
             <div className="flex items-center gap-3 px-4 h-14 border-b border-border">
               <Search className="h-[18px] w-[18px] text-muted" />

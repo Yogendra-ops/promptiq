@@ -103,6 +103,7 @@ export default function Templates() {
             <input
               className="input h-10 pl-9"
               placeholder="Search templates…"
+              aria-label="Search templates"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -322,7 +323,7 @@ function TemplateDetail({
               <Copy className="h-3.5 w-3.5" /> Copy
             </button>
           </div>
-          <pre className="whitespace-pre-wrap font-mono text-[13px] leading-relaxed text-ink/90 border border-border rounded-lg p-4 bg-white/70 h-[340px] overflow-y-auto scrollbar-thin">
+          <pre className="whitespace-pre-wrap font-mono text-[13px] leading-relaxed text-ink/90 border border-border rounded-lg p-4 bg-white/70 h-[240px] md:h-[340px] overflow-y-auto scrollbar-thin">
             {filled || '(empty)'}
           </pre>
         </div>
@@ -376,27 +377,30 @@ function VariableField({
     v.name === 'context';
   return (
     <li className="space-y-1.5">
-      <label className="flex items-center justify-between gap-2">
-        <span className="label !mb-0 flex items-center gap-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <label htmlFor={`var-${v.name}`} className="label !mb-0 flex items-center gap-1.5 cursor-pointer">
           <code className="text-[11px] bg-border-light border border-border rounded px-1.5 py-0.5 font-mono text-accent">
             {`{{${v.name}}}`}
           </code>
           {v.label}
-        </span>
+        </label>
         {value && (
           <button
+            type="button"
             onClick={() => onChange('')}
             className="text-[11px] text-muted hover:text-score-poor inline-flex items-center gap-0.5"
+            aria-label={`Clear ${v.label}`}
           >
             <X className="h-3 w-3" /> Clear
           </button>
         )}
-      </label>
+      </div>
       {v.description && (
         <p className="text-[11px] text-muted leading-snug">{v.description}</p>
       )}
       {long ? (
         <textarea
+          id={`var-${v.name}`}
           className="textarea min-h-[96px] text-[13px]"
           placeholder={v.defaultValue || `e.g. ${v.label.toLowerCase()}…`}
           value={value}
@@ -405,6 +409,7 @@ function VariableField({
         />
       ) : (
         <input
+          id={`var-${v.name}`}
           className="input h-10 text-[13px]"
           placeholder={v.defaultValue || `e.g. ${v.label.toLowerCase()}…`}
           value={value}
